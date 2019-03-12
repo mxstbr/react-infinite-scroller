@@ -205,15 +205,9 @@ export default class InfiniteScroll extends Component {
       (el && el.offsetParent !== null)
     ) {
       this.detachScrollListener();
-      const beforeScrollHeight = parentNode.scrollHeight;
-      const beforeScrollTop = parentNode.scrollTop;
       // Call loadMore after detachScrollListener to allow for non-async loadMore functions
       if (typeof this.props.loadMore === 'function') {
-        this.props.loadMore((this.pageLoaded += 1)).then(() => {
-          if (!this.props.isReverse) return;
-          parentNode.scrollTop =
-            parentNode.scrollHeight - beforeScrollHeight + beforeScrollTop;
-        });
+        this.props.loadMore((this.pageLoaded += 1));
       }
     }
   }
