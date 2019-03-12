@@ -113,14 +113,6 @@ var InfiniteScroll = (function(_Component) {
     {
       key: 'componentDidUpdate',
       value: function componentDidUpdate() {
-        if (this.props.isReverse && this.loadMore) {
-          var parentElement = this.getParentElement(this.scrollComponent);
-          parentElement.scrollTop =
-            parentElement.scrollHeight -
-            this.beforeScrollHeight +
-            this.beforeScrollTop;
-          this.loadMore = false;
-        }
         this.attachScrollListener();
       }
     },
@@ -273,6 +265,8 @@ var InfiniteScroll = (function(_Component) {
     {
       key: 'scrollListener',
       value: function scrollListener() {
+        var _this2 = this;
+
         var el = this.scrollComponent;
         var scrollEl = window;
         var parentNode = this.getParentElement(el);
@@ -306,12 +300,15 @@ var InfiniteScroll = (function(_Component) {
           el.offsetParent !== null
         ) {
           this.detachScrollListener();
-          this.beforeScrollHeight = parentNode.scrollHeight;
-          this.beforeScrollTop = parentNode.scrollTop;
+          var beforeScrollHeight = parentNode.scrollHeight;
+          var beforeScrollTop = parentNode.scrollTop;
           // Call loadMore after detachScrollListener to allow for non-async loadMore functions
           if (typeof this.props.loadMore === 'function') {
-            this.props.loadMore((this.pageLoaded += 1));
-            this.loadMore = true;
+            this.props.loadMore((this.pageLoaded += 1)).then(function() {
+              if (!_this2.props.isReverse) return;
+              parentNode.scrollTop =
+                parentNode.scrollHeight - beforeScrollHeight + beforeScrollTop;
+            });
           }
         }
       }
@@ -341,7 +338,7 @@ var InfiniteScroll = (function(_Component) {
     {
       key: 'render',
       value: function render() {
-        var _this2 = this;
+        var _this3 = this;
 
         var renderProps = this.filterProps(this.props);
 
@@ -375,7 +372,7 @@ var InfiniteScroll = (function(_Component) {
           ]);
 
         props.ref = function(node) {
-          _this2.scrollComponent = node;
+          _this3.scrollComponent = node;
           if (ref) {
             ref(node);
           }
